@@ -16,7 +16,7 @@ GraphNode::GraphNode(qreal width, qreal height, QGraphicsItem *parent):
     setPath(p);
 
     QFont font("Arial", TEXT_SIZE);
-    _textPath.addText(-width/2 + 30, -height/2 + 30, font, "<missing name>");
+    _textPath.addText(-width/2 + 30, -height/2 + 30, font, "");
 
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -26,6 +26,11 @@ GraphNode::GraphNode(qreal width, qreal height, QGraphicsItem *parent):
     _connectionPoints.append(QPointF{0, height/2});
     _connectionPoints.append(QPointF{-width/2, 0});
     _connectionPoints.append(QPointF{0, -height/2});
+
+    // Set default properties
+    setProperty("name", "");
+    setProperty("speed", "1.0");
+    setProperty("islooping", "false");
 }
 
 void GraphNode::setProperty(const QString &prop, const QString &value)
@@ -90,6 +95,16 @@ void GraphNode::removeConnection(NodeConnection* con)
     {
         _inputConnections.remove(inputIndex);
     }
+}
+
+const QVector<NodeConnection *> &GraphNode::getInputConnections() const
+{
+    return _inputConnections;
+}
+
+const QVector<NodeConnection *> &GraphNode::getOutputConnections() const
+{
+    return _outputConnections;
 }
 
 void GraphNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

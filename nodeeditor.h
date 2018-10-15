@@ -2,6 +2,7 @@
 #define NODEEDITOR_H
 
 #include <QObject>
+#include <QVector>
 
 class QGraphicsScene;
 class QGraphicsItem;
@@ -21,6 +22,10 @@ public:
 
     void addNode(GraphNode* node);
     void removeNode(GraphNode* node);
+
+    void save(QJsonObject& data) const;
+    void load(const QJsonObject& data);
+    void clear();
 private:
     QGraphicsItem* itemAt(const QPointF&);
 
@@ -32,6 +37,8 @@ private:
     MainWindow* _mainWindow;
     QGraphicsScene* _scene;
     NodeConnection* _currentConnection;
+
+    QVector<GraphNode*> _nodes;
 };
 
 #endif // NODEEDITOR_H

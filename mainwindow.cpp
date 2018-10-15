@@ -5,6 +5,8 @@
 #include "nodeeditor.h"
 #include "inspectorwidget.h"
 
+#include <QMessageBox>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow)
@@ -81,4 +83,97 @@ void MainWindow::on_actionAdd_Node_triggered()
     node->setPos(150, 150);
 
     _nodeEditor->addNode(node);
+}
+
+void MainWindow::on_actionLoad_triggered()
+{
+    loadAction();
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    saveAction();
+}
+
+void MainWindow::on_actionNew_triggered()
+{
+    newProject();
+}
+
+bool MainWindow::loadAction()
+{
+    // Load
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open animation controller"), "",
+        tr("Animation Controller (*.animctrl)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file(fileName);
+
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                file.errorString());
+            return false;
+        }
+
+        QByteArray rawData = file.readAll();
+
+        QJsonDocument data {QJsonDocument::fromJson(rawData)};
+
+        _nodeEditor->load(data.object());
+        return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::saveAction()
+{
+    // Save
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save animation controller"), "",
+        tr("Animation Controller (*.animctrl)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file{fileName};
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+            return false;
+        }
+
+        QTextStream out(&file);
+
+        // Write to file
+        QJsonObject data;
+        _nodeEditor->save(data);
+
+        QJsonDocument jsonDoc{data};
+        file.write(jsonDoc.toJson());
+
+        QMessageBox::information(this, tr("Success!"), tr("Great success!"));
+
+        return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::newProject()
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(this,
+        "Create new graph",
+        "All unsaved changes will be lost. Are you sure?",
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes)
+    {
+        _nodeEditor->clear();
+        return true;
+    }
+
+    return false;
 }

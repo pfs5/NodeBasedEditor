@@ -23,6 +23,9 @@ public:
 
     void removeConnection(NodeConnection* con);
 
+    const QVector<NodeConnection*>& getInputConnections() const;
+    const QVector<NodeConnection*>& getOutputConnections() const;
+
 // QGraphicsItem
 public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;

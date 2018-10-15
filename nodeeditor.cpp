@@ -56,11 +56,98 @@ bool NodeEditor::eventFilter(QObject *o, QEvent *e)
 void NodeEditor::addNode(GraphNode *node)
 {
     _scene->addItem(node);
+    _nodes.append(node);
 }
 
 void NodeEditor::removeNode(GraphNode *node)
 {
+    int index = _nodes.indexOf(node);
+    if (index != -1)
+    {
+        _nodes.removeAt(index);
+    }
+
     delete node;
+}
+
+void NodeEditor::save(QJsonObject &data) const
+{
+    QJsonArray nodes;
+    QJsonArray transitions;
+
+    for (const GraphNode* node : _nodes)
+    {
+        QJsonObject nodeData;
+        nodeData["name"] = node->getProperty("name");
+        nodeData["speed"] = node->getProperty("speed");
+        nodeData["islooping"] = node->getProperty("islooping");
+        nodeData["_posx"] = node->pos().x();
+        nodeData["_posy"] = node->pos().y();
+        nodes.append(nodeData);
+
+        for (const NodeConnection* con : node->getOutputConnections())
+        {
+            QJsonObject transData;
+            transData["trigger"] = con->getProperty("trigger");
+            transData["from"] = con->getStartNode()->getProperty("name");
+            transData["to"] = con->getEndNode()->getProperty("name");
+
+            transitions.append(transData);
+        }
+    }
+
+    data["animations"] = nodes;
+    data["transitions"] = transitions;
+}
+
+void NodeEditor::load(const QJsonObject &data)
+{
+    clear();
+
+    // Load new data
+    for (const auto nodeData : data["animations"].toArray())
+    {
+        GraphNode * node = new GraphNode();
+        node->setPos(nodeData.toObject()["_posx"].toDouble(), nodeData.toObject()["_posy"].toDouble());
+        node->setProperty("name", nodeData.toObject()["name"].toString());
+        node->setProperty("speed", nodeData.toObject()["speed"].toString());
+        node->setProperty("islooping", nodeData.toObject()["islooping"].toString());
+
+        addNode(node);
+    }
+
+    for (const auto conData : data["transitions"].toArray())
+    {
+        NodeConnection* con = new NodeConnection();
+        con->setProperty("trigger", conData.toObject()["trigger"].toString());
+
+        for (GraphNode* node : _nodes)
+        {
+            if (node->getProperty("name") == conData.toObject()["from"].toString())
+            {
+                node->addOutputConnection(con);
+            }
+
+            if (node->getProperty("name") == conData.toObject()["to"].toString())
+            {
+                node->addInputConnection(con);
+            }
+        }
+
+        _scene->addItem(con);
+    }
+
+    _mainWindow->updateUI();
+}
+
+void NodeEditor::clear()
+{
+    for (GraphNode* node : _nodes)
+    {
+        delete node;
+    }
+
+    _nodes.clear();
 }
 
 QGraphicsItem* NodeEditor::itemAt(const QPointF& pos)

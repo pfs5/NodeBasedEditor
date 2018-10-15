@@ -31,6 +31,17 @@ public:
 private slots:
     void on_actionAdd_Node_triggered();
 
+    void on_actionLoad_triggered();
+
+    void on_actionSave_triggered();
+
+    void on_actionNew_triggered();
+
+private:
+    bool loadAction();
+    bool saveAction();
+    bool newProject();
+
 private:
     Ui::MainWindow* _ui;
     QGraphicsScene* _scene;
