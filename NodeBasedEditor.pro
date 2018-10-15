@@ -30,7 +30,8 @@ SOURCES += \
     customdockwidget.cpp \
     graphnode.cpp \
     nodeeditor.cpp \
-    nodeconnection.cpp
+    nodeconnection.cpp \
+    inspectorwidget.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -38,10 +39,12 @@ HEADERS += \
     graphnode.h \
     nodeeditor.h \
     nodeconnection.h \
-    nodeeditorshared.h
+    nodeeditorshared.h \
+    inspectorwidget.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    inspectorwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

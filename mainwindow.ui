@@ -34,7 +34,7 @@ color: white;</string>
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionTest1"/>
+    <addaction name="actionAdd_Node"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -44,9 +44,9 @@ color: white;</string>
 color: white;</string>
    </property>
   </widget>
-  <action name="actionTest1">
+  <action name="actionAdd_Node">
    <property name="text">
-    <string>Test1</string>
+    <string>Add Node</string>
    </property>
   </action>
  </widget>

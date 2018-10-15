@@ -6,6 +6,9 @@
 #include <QtWidgets>
 
 class NodeEditor;
+class GraphNode;
+class InspectorWidget;
+class NodeConnection;
 
 namespace Ui {
 class MainWindow;
@@ -19,11 +22,21 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void onNodeSelected(GraphNode* node);
+    void onTransitionSelected(NodeConnection* con);
+    void onDeselect();
+
+    void updateUI();
+
+private slots:
+    void on_actionAdd_Node_triggered();
+
 private:
     Ui::MainWindow* _ui;
     QGraphicsScene* _scene;
     QGraphicsView* _view;
     NodeEditor* _nodeEditor;
+    InspectorWidget* _inspector;
 };
 
 #endif // MAINWINDOW_H
