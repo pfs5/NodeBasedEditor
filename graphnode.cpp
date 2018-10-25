@@ -22,10 +22,10 @@ GraphNode::GraphNode(qreal width, qreal height, QGraphicsItem *parent):
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptDrops(true);
 
-    _connectionPoints.append(QPointF{width/2, 0});
-    _connectionPoints.append(QPointF{0, height/2});
-    _connectionPoints.append(QPointF{-width/2, 0});
-    _connectionPoints.append(QPointF{0, -height/2});
+    _connectionPoints.append(QPointF{0, -height/2});    // Top
+    _connectionPoints.append(QPointF{width/2, 0});      // Right
+    _connectionPoints.append(QPointF{0, height/2});     // Bottom
+    _connectionPoints.append(QPointF{-width/2, 0});     // Left
 
     // Set default properties
     setProperty("name", "");
@@ -145,25 +145,82 @@ void GraphNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphNode::updateConnections()
 {
+    std::vector<NodeConnection*> connectionsPerPosition [4][2];
+
     for (NodeConnection* con : _outputConnections)
     {
-        con->setStartPos(getClosestConnectionPoint(con->getEndPos()));
+        int conPos = getClosesConnectionPosition(con->getEndPos());
+        //con->setStartPos(_connectionPoints[(int) conPos]);
+        connectionsPerPosition[conPos][0].push_back(con);
         con->updatePath();
     }
 
     for (NodeConnection* con : _inputConnections)
     {
-        con->setEndPos(getClosestConnectionPoint(con->getStartPos()));
+        int conPos = getClosesConnectionPosition(con->getStartPos());
+        //con->setEndPos(_connectionPoints[(int) conPos]);;
+        connectionsPerPosition[conPos][1].push_back(con);
+
         con->updatePath();
+    }
+
+    float dist = 20.f;
+
+    // Set node positions
+    for (int i = 0; i < 4; ++i)
+    {
+        unsigned int pointsPerConnectionPoint = connectionsPerPosition[i][0].size() + connectionsPerPosition[i][1].size();
+        float globalOffset = - dist * (pointsPerConnectionPoint - 1) / 2.f;
+        float currentOffset = 0.f;
+
+        for (NodeConnection* con : connectionsPerPosition[i][0])
+        {
+            float offset = currentOffset + globalOffset;
+            currentOffset += dist;
+
+            QPointF position = _connectionPoints[i] + scenePos();
+
+            if (i % 2 == 0)
+            {
+                position.setX(position.x() + offset);
+            }
+            else
+            {
+                position.setY(position.y() + offset);
+            }
+
+
+            con->setStartPos(position);
+        }
+
+        for (NodeConnection* con : connectionsPerPosition[i][1])
+        {
+            float offset = currentOffset + globalOffset;
+            currentOffset += dist;
+
+            QPointF position = _connectionPoints[i] + scenePos();
+            if (i % 2 == 0)
+            {
+                position.setX(position.x() + offset);
+            }
+            else
+            {
+                position.setY(position.y() + offset);
+            }
+
+            con->setEndPos(position);
+        }
     }
 }
 
-QPointF GraphNode::getClosestConnectionPoint(const QPointF &p)
+int GraphNode::getClosesConnectionPosition(const QPointF &p)
 {
     qreal minDist = std::numeric_limits<qreal>::max();
-    QPointF closestPoint;
+    int connectionPositionIndex = 0;
 
-    for (const QPointF& connPt : _connectionPoints) {
+    for (int i = 0; i < 4; ++i) {
+        const QPointF& connPt = _connectionPoints[i];
+
         QPointF connPtWorld = scenePos() + connPt;
         QPointF diff = connPtWorld - p;
         qreal distance = QPointF::dotProduct(diff, diff);
@@ -171,11 +228,11 @@ QPointF GraphNode::getClosestConnectionPoint(const QPointF &p)
         if (distance < minDist)
         {
             minDist = distance;
-            closestPoint = connPtWorld;
+            connectionPositionIndex = i;
         }
     }
 
-    return closestPoint;
+    return connectionPositionIndex;
 }
 
 QSet<GraphNode*> GraphNode::getConnectedNodes()

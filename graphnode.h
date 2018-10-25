@@ -10,10 +10,18 @@
 
 class NodeConnection;
 
+enum class ConnectionPosition : int
+{
+    Top = 0,
+    Right = 1,
+    Bottom = 2,
+    Left = 3
+};
+
 class GraphNode : public QGraphicsPathItem
 {
 public:
-    GraphNode(qreal width = 200, qreal heigth = 50, QGraphicsItem *parent = nullptr);
+    GraphNode(qreal width = 200, qreal heigth = 100, QGraphicsItem *parent = nullptr);
 
     void setProperty(const QString &prop, const QString &value);
     QString getProperty(const QString &prop) const;
@@ -59,7 +67,7 @@ private:
 
 private:
     void updateConnections();
-    QPointF getClosestConnectionPoint(const QPointF &p);
+    int getClosesConnectionPosition(const QPointF &p);
     QSet<GraphNode*> getConnectedNodes();
 };
 
